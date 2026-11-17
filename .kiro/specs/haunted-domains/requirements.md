@@ -7,10 +7,11 @@ Kiroween 2026 Costume Contest. It turns the domsect.io leaderboard
 pipeline's real daily data into an explorable web experience: domains that
 vanished from the Top 60 board, when they were last seen, what they last
 listed for, whether they are registered right now, and whether they are
-worth sniping. The dataset is real — every ghost comes from 35 consecutive
-days (2026-10-13 → 2026-11-16) of Top 60 rows in Supabase
-`domain_leaderboard`, 60 rows a day. The app is a static site: no backend,
-no login, no API keys.
+worth sniping. The dataset is real — every ghost comes from 42 days
+(2026-10-06 → 2026-11-16) of Top 60 rows in Supabase `domain_leaderboard`.
+The verified 60-rows-a-day anchor covers 35 consecutive days, 2026-10-13 →
+2026-11-16; the 2026-10-06 → 2026-10-12 counts are being verified
+separately. The app is a static site: no backend, no login, no API keys.
 
 ## Glossary
 
@@ -40,8 +41,9 @@ glance, so I can pick one to investigate.
    domain, `last_seen` date, `days_missing`, last listed price, and last
    score.
 2. WHEN the page loads, THE SYSTEM SHALL display the dataset meta line:
-   ghost count, observed window (2026-10-13 → 2026-11-16), and the
-   "not investment advice" disclaimer.
+   the ghost count and observed window, rendered from `meta.ghost_count`
+   and `meta.window` as read from `data/ghosts.json` (no hardcoded dates or
+   counts), and the "not investment advice" disclaimer.
 3. WHEN a ghost is shown, THE SYSTEM SHALL label its death as "last seen
    on the board" with the date; it SHALL NOT use the words "expired" or
    "deleted" anywhere in the UI.
