@@ -10,14 +10,14 @@
 
 ## 2. Real data export and RDAP snapshot
 
-- [ ] 2. Run the export query in `data/DATA-README.md` (Supabase SQL
+- [x] 2. Run the export query in `data/DATA-README.md` (Supabase SQL
   Editor), download the result as `ghosts.csv` into the repo root, and
   run `python3 scripts/export_to_ghosts.py ghosts.csv` to write the real
   `data/ghosts.json`
-- [ ] 2.1 Fill in the Coverage section of `data/DATA-README.md` (ghost
+- [x] 2.1 Fill in the Coverage section of `data/DATA-README.md` (ghost
   count, earliest/latest `last_seen`)
-- [ ] 2.2 Delete `data/ghosts.sample.json` from the repo
-- [ ] 2.3 Run `python3 scripts/rdap_check.py` and record the snapshot
+- [x] 2.2 Delete `data/ghosts.sample.json` from the repo
+- [x] 2.3 Run `python3 scripts/rdap_check.py` and record the snapshot
   counts in `data/DATA-README.md`
 - [ ] 2.4 Run `python3 scripts/validate_data.py` — it must exit 0 before
   any app code is written
