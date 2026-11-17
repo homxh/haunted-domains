@@ -112,8 +112,8 @@ build if any domain ends in `.example` or if `meta.sample` is true.
 ## Coverage (to fill in after the export)
 
 - Observed window: 2026-10-13 → 2026-11-16 (35 days × 60 rows).
-- Ghosts found: _(fill in: count, earliest last_seen, latest last_seen)_
-- RDAP snapshot: _(fill in: checked_at, registered / available / unknown counts)_
+- Ghosts found: 100 (earliest `last_seen` 2026-10-06, latest `last_seen` 2026-10-09).
+- RDAP snapshot: `checked_at` 2026-11-17T14:40:52Z. 100 registered, 0 available, 0 unknown.
 
 ## Disclaimer
 
