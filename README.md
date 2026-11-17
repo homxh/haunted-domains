@@ -38,7 +38,6 @@ Devpost submission: _(add after submitting)_
 
 | Path | What it is |
 | --- | --- |
-| `data/ghosts.sample.json` | SAMPLE ONLY (2 `.example` rows): the exact shape of `data/ghosts.json` |
 | `data/DATA-README.md` | Provenance, ghost definition, export query, RDAP method, data rules |
 | `scripts/rdap_check.py` | Batch RDAP snapshot: attaches `rdap_status` + `checked_at` to ghosts |
 | `.kiro/specs/haunted-domains/requirements.md` | EARS-style requirements (8 requirements) |
