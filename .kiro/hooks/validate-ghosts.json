@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "validate-ghosts",
+      "trigger": "PostFileSave",
+      "description": "Run the data validator after data/ghosts.json is saved.",
+      "matcher": "data/ghosts\\.json$",
+      "action": {
+        "type": "command",
+        "command": "python3 -B scripts/validate_data.py"
+      }
+    }
+  ]
+}
