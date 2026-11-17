@@ -3,7 +3,9 @@
 
 For each ghost, queries https://rdap.org/domain/<domain> once:
   HTTP 200 -> registered, HTTP 404 -> available, anything else -> unknown.
-Writes rdap_status + rdap_checked_at back into the file, in place.
+Writes rdap_status + rdap_checked_at back into the file, in place, and sets
+meta.rdap_checked_at to the same run timestamp (only when at least one ghost
+was checked, so the meta value always equals the latest ghost snapshot).
 
 Rules (see data/DATA-README.md):
   - 1 request per second, 10s timeout, one retry on network error.
@@ -84,6 +86,8 @@ def main():
         time.sleep(RATE_LIMIT_S)
 
     if not args.dry_run:
+        if counts["registered"] + counts["available"] + counts["unknown"] > 0:
+            data.setdefault("meta", {})["rdap_checked_at"] = now
         with open(PATH, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2, ensure_ascii=False)
     print(f"done: {counts} (checked_at={now})")
