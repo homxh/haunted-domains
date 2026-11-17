@@ -31,7 +31,7 @@ haunted-domains/
 │   └── check.js
 ├── .kiro/specs/haunted-domains/   # this spec
 ├── .kiro/steering/product.md      # product + data-integrity steering
-└── .kiro/hooks/validate-ghosts.kiro.hook  # validator hook
+└── .kiro/hooks/validate-ghosts.json       # validator hook (Kiro IDE 1.x v1 schema)
 ```
 
 ## Data model
@@ -93,8 +93,8 @@ price is shown alongside, never folded into the number.
   domains, `meta.sample` is false, every ghost has `rdap_status` and
   `rdap_checked_at`, `days_missing` consistent with `last_seen` and the
   window end.
-- Kiro hook `.kiro/hooks/validate-ghosts.kiro.hook`: runs the validator on
-  `data/ghosts.json` after edits.
+- Kiro hook `.kiro/hooks/validate-ghosts.json` (v1 schema, `PostFileSave`
+  trigger matching `data/ghosts.json`): runs the validator after edits.
 - `tests/pwcheck/check.js` (Playwright, headless Chromium): ghost count
   vs data file, card fields vs data (domain, last_seen, price verbatim),
   routing (index → detail → back), search/filter, empty state, error
