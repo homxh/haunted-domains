@@ -5,11 +5,11 @@
 Source: the domsect.io leaderboard pipeline (GoDaddy public Inventory
 Protocol feed `all_listings.csv.zip` + Wayback CDX enrichment, scored
 locally, Top 60/day upserted into Supabase table `domain_leaderboard` on
-the OCI production box). The table spans **2026-10-06 → 2026-11-16**. The
-verified 60-rows-a-day anchor covers **35 consecutive days, 2026-10-13 →
-2026-11-16** (the 11-01–11-06 batches were confirmed 2026-11-17; the anchor
-before that was 19 days through 10-31, user-verified). The 2026-10-06 →
-2026-10-12 counts are being verified separately.
+the OCI production box). Verified live: **42 consecutive days, 2026-10-06 →
+2026-11-16, 60 rows every day**. The anchor was built in two steps: 2026-10-13
+→ 2026-11-16 (35 days; the 11-01–11-06 batches were confirmed 2026-11-17, and
+the anchor before that was 19 days through 10-31, user-verified), then the
+2026-10-06 → 2026-10-12 counts were checked at 60 rows on each of those 7 days.
 
 Pipeline code: `domain-pipeline-v2-2026-10-06.zip` (the `build_row` function
 is the schema authority). Each daily row stores: `list_date`, `rank`,
@@ -126,12 +126,17 @@ only so Kiro can build against the exact shape. **It must be replaced by
 the real export before the app is submitted.** The validator fails the
 build if any domain ends in `.example` or if `meta.sample` is true.
 
-## Coverage (to fill in after the export)
+## Coverage
 
-- Observed window: 2026-10-06 → 2026-11-16. The verified 60-rows-a-day anchor is
-  2026-10-13 → 2026-11-16 (35 days).
-- Ghosts found: 100 (earliest `last_seen` 2026-10-06, latest `last_seen` 2026-10-09).
-- RDAP snapshot: `checked_at` 2026-11-17T14:40:52Z. 100 registered, 0 available, 0 unknown.
+- Observed window: 2026-10-06 → 2026-11-16 (42 days × 60 rows).
+- Ghosts found: 1,199 (earliest `last_seen` 2026-10-06, latest `last_seen` 2026-11-15).
+  Exported in 12 pages of up to 100 rows; the converter confirmed 1,199 unique
+  domains against `total_ghosts` = 1,199.
+- RDAP snapshot: 1,199 registered, 0 available, 0 unknown. Taken in two runs on
+  2026-11-17: 400 ghosts at `checked_at` 2026-11-17T17:24:57Z and 799 ghosts at
+  2026-11-17T17:33:22Z. Each ghost carries the time of its own run, and
+  `meta.rdap_checked_at` is the later one.
+- All 1,199 ghosts are `.com` domains, and every `backlinks` value is `n/a`.
 
 ## Disclaimer
 
