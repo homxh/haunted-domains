@@ -66,9 +66,9 @@
 
 ## 6. Search and filter
 
-- [ ] 6. Implement TLD / risk / RDAP-status filters and text search
+- [x] 6. Implement TLD / risk / RDAP-status filters and text search
   (domain name, case-insensitive) with a visible result count
-- [ ] 6.1 Implement the debounced, de-duplicated live-region announcement
+- [x] 6.1 Implement the debounced, de-duplicated live-region announcement
   for the result count (same pattern as Haunted Earnings PR #4)
 
 ## 7. Accessibility pass (same baseline as Haunted Earnings PR #4)

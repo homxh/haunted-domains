@@ -87,7 +87,24 @@ The resurrection check on the detail view shows each ghost's own
   first), recency tier badge (fresh / cold / ancient).
 - `#/<domain>` — ghost detail: full history, last price + listing end,
   resurrection status + checked_at, value radar with inputs.
-- `#/?q=<term>` — search results across domain names.
+- `#/?q=<term>&tld=<tld>&risk=<label>&rdap=<status>` — search and filters,
+  all optional and combined with AND. The URL is the single source of
+  truth: the controls write the hash with `location.replace` (typing and
+  picking filters do not fill the back button) and the router reads it back,
+  so links, reload and the back button restore the same list. `q` matches
+  the domain name, case-insensitively, as a substring, and is trimmed.
+  Filter values the data does not have are ignored rather than matching
+  nothing. Typing is debounced by 250 ms and Enter applies at once.
+- Filter bar: a search form above the views, shown on the index and (disabled)
+  in the error state, hidden on the detail and not-found views. TLD and risk
+  options come from the data; the registration options are the three
+  snapshot statuses. Every option shows its count over the whole data set,
+  for example "Available (0)".
+- Count and announcements: the visible line reads "Showing 60 of 1,199", or
+  "Showing 60 of 214 matching" while a search or filter is active. The live
+  region repeats that text, debounced by 400 ms and skipped when it equals
+  the previous announcement. With no matches it announces the empty-state
+  sentence instead.
 - Error state: if `ghosts.json` fails to load, show the error panel with
   the URL and HTTP status; the filter bar stays visible but inert.
 
