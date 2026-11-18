@@ -7,11 +7,11 @@ Kiroween 2026 Costume Contest. It turns the domsect.io leaderboard
 pipeline's real daily data into an explorable web experience: domains that
 vanished from the Top 60 board, when they were last seen, what they last
 listed for, whether they are registered right now, and whether they are
-worth sniping. The dataset is real — every ghost comes from 42 days
-(2026-10-06 → 2026-11-16) of Top 60 rows in Supabase `domain_leaderboard`.
-The verified 60-rows-a-day anchor covers 35 consecutive days, 2026-10-13 →
-2026-11-16; the 2026-10-06 → 2026-10-12 counts are being verified
-separately. The app is a static site: no backend, no login, no API keys.
+worth sniping. The dataset is real — every ghost comes from 42 consecutive
+days (2026-10-06 → 2026-11-16) of Top 60 rows in Supabase
+`domain_leaderboard`, 60 rows a day. The anchor was verified in two steps:
+2026-10-13 → 2026-11-16 first, then 2026-10-06 → 2026-10-12 at 60 rows on
+each day. The app is a static site: no backend, no login, no API keys.
 
 ## Glossary
 
