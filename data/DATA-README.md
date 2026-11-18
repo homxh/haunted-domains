@@ -37,6 +37,12 @@ Every row carries `total_ghosts`, the full ghost count, so the converter can
 check that no page is missing. The `ORDER BY` ends in `l.domain` so the paging
 order is stable.
 
+The query is pinned to the observed window end, `DATE '2026-11-16'`. Rows with
+a later `list_date` are ignored everywhere, so rerunning it after the table
+grows returns the same ghosts. Without the pin, a domain that reappears on a
+later date drops out of the list and `total_ghosts` changes. To publish a
+later window, change that date in every place it appears below.
+
 ```sql
 WITH last_rows AS (
   SELECT DISTINCT ON (domain)
@@ -44,21 +50,24 @@ WITH last_rows AS (
     score AS last_score, price AS last_price, ends_at AS last_ends,
     age_years, tld, risk, history, backlinks
   FROM domain_leaderboard
+  WHERE list_date <= DATE '2026-11-16'
   ORDER BY domain, list_date DESC
 ),
 first_seen AS (
   SELECT domain, MIN(list_date) AS first_seen, COUNT(*) AS days_on_board
   FROM domain_leaderboard
+  WHERE list_date <= DATE '2026-11-16'
   GROUP BY domain
 )
 SELECT l.*, f.first_seen, f.days_on_board,
-  ((SELECT MAX(list_date) FROM domain_leaderboard) - l.last_seen) AS days_missing,
-  (SELECT MIN(list_date) FROM domain_leaderboard) AS window_start,
-  (SELECT MAX(list_date) FROM domain_leaderboard) AS window_end,
+  (DATE '2026-11-16' - l.last_seen) AS days_missing,
+  (SELECT MIN(list_date) FROM domain_leaderboard
+    WHERE list_date <= DATE '2026-11-16') AS window_start,
+  DATE '2026-11-16' AS window_end,
   (SELECT COUNT(*) FROM last_rows
-    WHERE last_seen < (SELECT MAX(list_date) FROM domain_leaderboard)) AS total_ghosts
+    WHERE last_seen < DATE '2026-11-16') AS total_ghosts
 FROM last_rows l JOIN first_seen f USING (domain)
-WHERE l.last_seen < (SELECT MAX(list_date) FROM domain_leaderboard)
+WHERE l.last_seen < DATE '2026-11-16'
 ORDER BY l.last_seen ASC, l.domain ASC
 LIMIT 100 OFFSET 0;
 ```
