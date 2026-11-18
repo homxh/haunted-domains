@@ -61,6 +61,25 @@ Value radar (display only): a 0–100 signal from `last_score` (weight 0.5),
 (score S · age A yrs · backlinks B)" with the inputs visible. The last
 price is shown alongside, never folded into the number.
 
+Radar arithmetic as built: score part = 0.5 × `last_score` (max 50); age
+part = 1.25 × min(`age_years`, 20) (max 25); backlinks part = 25 unless the
+value is `"n/a"`, otherwise 0. The total is rounded to the nearest whole
+number for the headline and the meter, and the detail view lists each part
+and the unrounded total so the number can be reproduced by hand. In the
+current data every ghost has `"n/a"` backlinks, so the radar ranges 44 to
+73.
+
+Listing-end label: `last_ends` is shown as written. The label compares it
+with `meta.rdap_checked_at`: on or before that time it reads "Listing ended",
+after it "Listing set to end". The text carries a PDT or PST suffix, which
+is converted to UTC for the comparison (PDT = UTC-7, PST = UTC-8). If the text
+does not match that shape, or the snapshot time is unreadable, the label is
+the neutral "Listing end". In the current data 10 ghosts fall after the
+snapshot (11/18 to 11/20) and 1,189 on or before it.
+
+The resurrection check on the detail view shows each ghost's own
+`rdap_checked_at` (the snapshot ran in two batches), not the meta value.
+
 ## Views and routing (hash router, same pattern as Haunted Earnings)
 
 - `#/` — graveyard index: meta line, filter bar (TLD / risk / RDAP status
