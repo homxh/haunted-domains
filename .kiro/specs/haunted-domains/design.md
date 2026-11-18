@@ -106,11 +106,15 @@ price is shown alongside, never folded into the number.
 - Decided: ghosts are "absent from the latest board", not "expired" —
   see Requirement 8. No invented death threshold.
 - Decided: RDAP is an offline batch snapshot, never a live browser call.
-- Open: ghost count is unknown until the export runs (the query is in
-  `data/DATA-README.md`). If it is under ~20, the index needs no
-  pagination discussion; if it is over ~300, add a "show more" control
-  that does NOT remove entries from the DOM (Playwright asserts the full
-  count).
+- Decided: the export has 1,199 ghosts, so the index renders every card
+  into the DOM and reveals 60 at a time with a "Show 60 more" button
+  (the label shows the real number left when fewer than 60 remain).
+  The count line is always visible: "Showing 60 of 1,199". Search and
+  filters apply to all 1,199 ghosts, not only the revealed ones. When a
+  search or filter changes, the reveal resets to the first 60 matches and
+  the line reads "Showing 60 of 214 matching". Hidden cards stay in the
+  DOM (Playwright asserts the full count). After "Show more", focus moves
+  to the first newly revealed card.
 - Open: whether the same domsect.io startup can claim Best Startup for
   two submissions — the rules do not say. Assume one claim; do not plan
   the budget around two.
