@@ -38,14 +38,18 @@
 
 ## 4. App shell and graveyard index
 
-- [ ] 4. Write `index.html` (hero, filter bar, views, error state, skip
+- [x] 4. Write `index.html` (hero, filter bar, views, error state, skip
   link, per-view headings for focus management)
-- [ ] 4.1 Write `assets/style.css` (haunted theme, tombstone cards,
+  - Scope notes: the filter bar markup lands with task 6, so no inert
+    controls ship in between. The `#/?q=` route and the show-more reset
+    already work. The `#/<domain>` view is a placeholder heading until
+    task 5.
+- [x] 4.1 Write `assets/style.css` (haunted theme, tombstone cards,
   responsive 360/1000/1440, no horizontal scrolling)
-- [ ] 4.2 Write `assets/app.js` routing (`#/`, `#/<domain>`, `#/?q=`) and
+- [x] 4.2 Write `assets/app.js` routing (`#/`, `#/<domain>`, `#/?q=`) and
   the graveyard index (one card per ghost: domain, last seen,
   days missing, last price verbatim, last score, tier badge)
-- [ ] 4.3 Implement the meta line (ghost count, window, disclaimer) and
+- [x] 4.3 Implement the meta line (ghost count, window, disclaimer) and
   the empty/error states
 
 ## 5. Ghost detail and resurrection radar

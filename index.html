@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Haunted Domains · Kiroween 2026</title>
+  <meta name="description" content="A graveyard for domains that vanished from the domsect.io Top 60 board, with last-seen dates, last listed prices, and a resurrection check. Kiroween 2026 Costume Contest.">
+  <meta name="color-scheme" content="dark">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="assets/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main" id="skip-link">Skip to content</a>
+
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="hero-text">
+        <p class="eyebrow">Kiroween 2026 · Costume Contest</p>
+        <h1 class="site-title">Haunted Domains</h1>
+        <p class="tagline">A graveyard for domains that vanished from the domsect.io Top 60 board. See when each was last seen, what it last listed for, and whether it is registered today.</p>
+      </div>
+      <svg class="hero-art" viewBox="0 0 320 130" aria-hidden="true" focusable="false">
+        <circle cx="262" cy="34" r="22" fill="#ff7a1a"/>
+        <circle cx="255" cy="28" r="4" fill="#e8650c"/>
+        <circle cx="270" cy="42" r="3" fill="#e8650c"/>
+        <path d="M18 120 V82 a22 22 0 0 1 44 0 V120 z" fill="#2b1d45" stroke="#8b5cf6" stroke-width="2"/>
+        <path d="M40 74 v16 M33 80 h14" stroke="#8b5cf6" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+        <path d="M214 120 V86 a20 20 0 0 1 40 0 V120 z" fill="#2b1d45" stroke="#8b5cf6" stroke-width="2"/>
+        <path d="M226 92 h16 M226 100 h16" stroke="#8b5cf6" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+        <path d="M110 110 V60 a30 30 0 0 1 60 0 V110 l-10 -9 l-10 9 l-10 -9 l-10 9 l-10 -9 l-10 9 z" fill="#f3eefc"/>
+        <ellipse cx="130" cy="62" rx="4" ry="5.5" fill="#1e1030"/>
+        <ellipse cx="150" cy="62" rx="4" ry="5.5" fill="#1e1030"/>
+        <ellipse cx="140" cy="77" rx="4" ry="6" fill="#ff7a1a"/>
+        <rect x="0" y="120" width="320" height="4" rx="2" fill="#3b2a5e"/>
+      </svg>
+    </div>
+  </header>
+
+  <main id="main" tabindex="-1">
+    <noscript>
+      <p class="panel">Haunted Domains loads its ghost list with JavaScript. Please enable it to enter the graveyard.</p>
+    </noscript>
+
+    <!-- Graveyard index (#/ and #/?q=term) -->
+    <section id="view-index" class="view" aria-labelledby="index-heading" hidden>
+      <h2 id="index-heading" class="view-heading" tabindex="-1">The graveyard</h2>
+      <p id="meta-line" class="meta-line"></p>
+      <p class="tier-note">Each ghost is tagged by how long it has been missing from the board: <strong>fresh</strong> under 7 days, <strong>cold</strong> 7 to 30 days, <strong>ancient</strong> over 30 days. The tags are display buckets only. They say nothing about the domain itself.</p>
+      <p id="loading" class="loading">Raising the ghosts…</p>
+      <p id="result-count" class="result-count" hidden></p>
+      <div id="empty-state" class="panel" hidden>
+        <p id="empty-text"></p>
+        <p><a href="#/">Back to the full graveyard</a></p>
+      </div>
+      <ul id="ghost-list" class="ghost-list" hidden></ul>
+      <div id="more-wrap" class="more-wrap" hidden>
+        <button type="button" id="show-more" class="btn"></button>
+      </div>
+    </section>
+
+    <!-- Ghost detail (#/<domain>) -->
+    <section id="view-detail" class="view" aria-labelledby="detail-heading" hidden>
+      <p class="back"><a href="#/">&larr; Back to the graveyard</a></p>
+      <h2 id="detail-heading" class="view-heading" tabindex="-1"></h2>
+      <p id="detail-body"></p>
+    </section>
+
+    <!-- Unknown domain -->
+    <section id="view-notfound" class="view" aria-labelledby="notfound-heading" hidden>
+      <h2 id="notfound-heading" class="view-heading" tabindex="-1">Ghost not found</h2>
+      <p id="notfound-text"></p>
+      <p><a href="#/">Back to the graveyard</a></p>
+    </section>
+
+    <!-- Data file failed to load -->
+    <section id="view-error" class="view" aria-labelledby="error-heading" hidden>
+      <h2 id="error-heading" class="view-heading" tabindex="-1">The graveyard could not be loaded</h2>
+      <div class="panel">
+        <p>File: <code id="error-url"></code></p>
+        <p>Status: <span id="error-status"></span></p>
+        <p id="error-hint" hidden>If you opened this page straight from disk, serve the folder over HTTP instead, for example with <code>python3 -m http.server</code>.</p>
+      </div>
+    </section>
+
+    <!-- The only live region. Announcements are debounced and de-duplicated in app.js. -->
+    <p id="status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
+  </main>
+
+  <footer class="site-footer">
+    <p><strong>For research use — not investment advice.</strong> Prices are historical GoDaddy listing prices, not appraisals. &ldquo;Last seen on the board&rdquo; is all the data proves about a domain.</p>
+    <p>Built with Kiro for Kiroween 2026.</p>
+  </footer>
+</body>
+</html>
