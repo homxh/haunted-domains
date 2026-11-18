@@ -41,7 +41,7 @@
     list: $('ghost-list'),
     moreWrap: $('more-wrap'),
     more: $('show-more'),
-    detailBody: $('detail-body'),
+    detailContent: $('detail-content'),
     notfoundText: $('notfound-text'),
     errorUrl: $('error-url'),
     errorStatus: $('error-status'),
@@ -212,6 +212,170 @@
     }
   }
 
+  // ---------- detail view ----------
+
+  // Value radar: a display score for browsing, not an appraisal or a price
+  // prediction. Weights come from design.md: last score 0.5, age 0.25 (counted
+  // up to 20 years), backlinks presence 0.25 ("n/a" counts as none). The last
+  // price is shown next to the score and never enters it. 25 points over a
+  // 20 year cap is 1.25 points per year, so every part is a multiple of 0.25
+  // and the parts add up exactly.
+  const AGE_CAP_YEARS = 20;
+  function radar(g) {
+    const scorePart = g.last_score * 0.5;
+    const ageCounted = Math.min(g.age_years, AGE_CAP_YEARS);
+    const agePart = ageCounted * 1.25;
+    const hasBacklinks = g.backlinks !== 'n/a';
+    const backlinksPart = hasBacklinks ? 25 : 0;
+    const total = scorePart + agePart + backlinksPart;
+    return { scorePart, ageCounted, agePart, hasBacklinks, backlinksPart, total, shown: Math.round(total) };
+  }
+
+  // last_ends looks like "11/19/2026 10:28 AM (PST)". Returns the instant in
+  // milliseconds, or null when the text is not in that shape.
+  function parseListingEnd(text) {
+    const m = /^(\d{2})\/(\d{2})\/(\d{4}) (\d{1,2}):(\d{2}) (AM|PM) \((PDT|PST)\)$/.exec(text);
+    if (!m) return null;
+    const hour24 = (Number(m[4]) % 12) + (m[6] === 'PM' ? 12 : 0);
+    const utcOffsetHours = m[7] === 'PDT' ? 7 : 8;
+    const ms = Date.UTC(Number(m[3]), Number(m[1]) - 1, Number(m[2]), hour24 + utcOffsetHours, Number(m[5]));
+    return Number.isNaN(ms) ? null : ms;
+  }
+
+  // The label is relative to the registration snapshot time (meta.rdap_checked_at):
+  // on or before it the listing had ended by then; after it, it was still set
+  // to end later. The text of last_ends itself is always shown unchanged.
+  function listingEndLabel(g) {
+    const ends = parseListingEnd(g.last_ends);
+    const snapshot = Date.parse(state.meta.rdap_checked_at);
+    if (ends === null || Number.isNaN(snapshot)) return 'Listing end';
+    return ends <= snapshot ? 'Listing ended' : 'Listing set to end';
+  }
+
+  const RDAP_COPY = {
+    registered: ['Registered', 'The snapshot found this domain registered.'],
+    available: ['Available', 'The snapshot found no registration record, so the domain may be open to register. Confirm with a registrar before acting on it.'],
+    unknown: ['Unknown', 'The snapshot could not tell whether this domain is registered. No guess is made here.'],
+  };
+
+  function section(title, className) {
+    const node = make('section', 'detail-section' + (className ? ' ' + className : ''));
+    node.appendChild(make('h3', null, title));
+    return node;
+  }
+
+  function factList(rows) {
+    const dl = make('dl', 'detail-facts');
+    for (const [label, value, fieldClass] of rows) dl.appendChild(fact(label, value, fieldClass));
+    return dl;
+  }
+
+  // Every radar part is a multiple of 0.25, so String() prints it exactly:
+  // 39.5, 25, 21.25.
+  function num(n) {
+    return String(n);
+  }
+
+  function renderRadar(g) {
+    const r = radar(g);
+    const node = section('Value radar', 'radar');
+
+    const headline = make('p', 'radar-value');
+    headline.appendChild(document.createTextNode('Resurrection value: '));
+    headline.appendChild(make('strong', 'field-radar', r.shown + '/100'));
+    node.appendChild(headline);
+    node.appendChild(make('p', 'radar-inputs',
+      '(score ' + g.last_score + ' \u00b7 age ' + g.age_years + ' yrs \u00b7 backlinks ' + g.backlinks + ')'));
+
+    const meter = make('div', 'meter');
+    meter.setAttribute('aria-hidden', 'true');
+    const fill = make('div', 'meter-fill');
+    fill.style.width = r.shown + '%';
+    meter.appendChild(fill);
+    node.appendChild(meter);
+
+    const parts = make('ul', 'radar-parts');
+    parts.appendChild(make('li', null,
+      'Last score ' + g.last_score + ' \u00d7 0.5 = ' + num(r.scorePart) + ' of 50'));
+    parts.appendChild(make('li', null,
+      'Age ' + g.age_years + ' yrs' + (g.age_years > AGE_CAP_YEARS ? ', counted up to ' + AGE_CAP_YEARS : '') +
+      ': ' + r.ageCounted + ' \u00d7 1.25 = ' + num(r.agePart) + ' of 25'));
+    parts.appendChild(make('li', null,
+      'Backlinks ' + g.backlinks + (r.hasBacklinks ? ': counts as 25 of 25' : ': counts as 0 of 25')));
+    const rounded = Number.isInteger(r.total) ? '' : ', shown rounded to ' + r.shown;
+    parts.appendChild(make('li', 'radar-total', 'Total ' + num(r.total) + rounded));
+    node.appendChild(parts);
+
+    node.appendChild(make('p', 'radar-price',
+      'Last offering ' + g.last_price + ' is shown for reference only. It is not part of the score.'));
+    node.appendChild(make('p', 'radar-disclaimer',
+      'A display score for browsing: not an appraisal and not a price prediction. For research use \u2014 not investment advice.'));
+    return node;
+  }
+
+  function renderRdap(g) {
+    const copy = RDAP_COPY[g.rdap_status] || ['Unknown', 'The snapshot holds a status this page does not recognise. No guess is made here.'];
+    const node = section('Resurrection check', 'rdap');
+    const line = make('p', 'rdap-line');
+    line.appendChild(make('span', 'rdap-pill rdap-' + (RDAP_COPY[g.rdap_status] ? g.rdap_status : 'unknown'), copy[0]));
+    node.appendChild(line);
+    node.appendChild(make('p', 'rdap-text', copy[1]));
+    const checked = make('p', 'rdap-checked');
+    checked.appendChild(document.createTextNode('Checked at '));
+    const when = make('time', 'field-checked', g.rdap_checked_at);
+    when.setAttribute('datetime', g.rdap_checked_at);
+    checked.appendChild(when);
+    checked.appendChild(document.createTextNode(' (UTC). This is a saved snapshot, not a live lookup, and the status may have changed since.'));
+    node.appendChild(checked);
+    return node;
+  }
+
+  function renderDetail(g) {
+    const root = els.detailContent;
+    root.replaceChildren();
+
+    const tier = tierOf(g.days_missing);
+    const intro = make('p', 'detail-intro tier-' + tier);
+    intro.appendChild(make('span', 'tier-badge', TIER_LABELS[tier]));
+    intro.appendChild(document.createTextNode(' Last seen on the board '));
+    const seen = make('time', 'nowrap', g.last_seen);
+    seen.setAttribute('datetime', g.last_seen);
+    intro.appendChild(seen);
+    intro.appendChild(document.createTextNode(', ' + g.days_missing + (g.days_missing === 1 ? ' day' : ' days') +
+      ' missing. The data shows nothing more than that.'));
+    root.appendChild(intro);
+
+    const board = section('On the board', 'board');
+    board.appendChild(factList([
+      ['First seen', g.first_seen, 'field-first'],
+      ['Last seen on the board', g.last_seen, 'field-last'],
+      ['Days on board', String(g.days_on_board), 'field-onboard'],
+      ['Days missing', String(g.days_missing), 'field-days'],
+      ['Last rank', String(g.last_rank), 'field-rank'],
+      ['Last score', String(g.last_score), 'field-score'],
+      ['Risk label', g.risk, 'field-risk'],
+      ['Age', g.age_years + ' years', 'field-age'],
+      ['Backlinks', g.backlinks, 'field-backlinks'],
+    ]));
+    const history = make('p', 'history-line');
+    history.appendChild(make('span', 'label', 'History'));
+    history.appendChild(make('span', 'field-history', g.history)); // verbatim
+    board.appendChild(history);
+    root.appendChild(board);
+
+    const listing = section('Last listing', 'listing');
+    listing.appendChild(factList([
+      ['Last offering', g.last_price, 'field-price'], // verbatim
+      [listingEndLabel(g), g.last_ends, 'field-listing-end'], // verbatim
+    ]));
+    listing.appendChild(make('p', 'note',
+      'The listing end is the time the last listing was set to close, as the data lists it. It is not a registration date.'));
+    root.appendChild(listing);
+
+    root.appendChild(renderRdap(g));
+    root.appendChild(renderRadar(g));
+  }
+
   // ---------- routing ----------
 
   // #/            graveyard index
@@ -262,7 +426,7 @@
         if (entry) {
           view = 'detail';
           els.headings.detail.textContent = entry.g.domain;
-          els.detailBody.textContent = 'The full record for this ghost is coming in the next release.';
+          renderDetail(entry.g);
           title = entry.g.domain;
         } else {
           view = 'notfound';

@@ -23,7 +23,8 @@ each day. The app is a static site: no backend, no login, no API keys.
 - **Resurrection status**: the RDAP snapshot for a ghost — `registered`,
   `available`, or `unknown` — with a `checked_at` timestamp.
 - **Value radar**: the "worth sniping" signal, computed from the ghost's
-  last score, age, backlinks, and last price. Not an appraisal.
+  last score, age, and backlinks, and shown next to the last price, which
+  is not part of the score. Not an appraisal.
 - **Display set**: the ghosts in `data/ghosts.json`. The sample file with
   `.example` rows is shape-only and must NOT ship.
 - **Kiroween**: the hackathon. Submission deadline Dec 4, 2026, 2:00 PM PT.
@@ -61,9 +62,13 @@ I can judge what it was worth.
 2. WHEN a price is shown, THE SYSTEM SHALL show the `last_price` string
    verbatim from the data; it SHALL NOT recompute, reformat, or invent a
    price.
-3. WHEN a ghost's listing end is shown, THE SYSTEM SHALL label it "listing
-   ended" with the `last_ends` value; it SHALL NOT present it as an expiry
-   or deletion date.
+3. WHEN a ghost's listing end is shown, THE SYSTEM SHALL show the
+   `last_ends` value exactly as it appears in the data, labelled relative
+   to the RDAP snapshot time (`meta.rdap_checked_at`): "Listing ended" when
+   `last_ends` is on or before that time, and "Listing set to end" when it
+   is after. If `last_ends` cannot be read as a time, THE SYSTEM SHALL use
+   the neutral label "Listing end". It SHALL NOT present the value as a
+   registration date.
 
 ### Requirement 3 — Resurrection radar
 
@@ -76,8 +81,9 @@ brought back and whether it is worth it, so I can decide to snipe it.
    (`registered` / `available` / `unknown`) together with the
    `rdap_checked_at` timestamp.
 2. WHEN a ghost is shown, THE SYSTEM SHALL show a value signal computed
-   from its last score, age, backlinks, and last price — displayed as a
-   plain score with its inputs visible, never as a price prediction.
+   from its last score, age, and backlinks, with its last price shown
+   next to it and not folded into the number — displayed as a plain score
+   with its inputs visible, never as a price prediction.
 3. THE SYSTEM SHALL NOT perform live RDAP lookups from the visitor's
    browser; the status shown SHALL always be the shipped snapshot.
 4. WHEN `rdap_status` is `unknown`, THE SYSTEM SHALL say so plainly

@@ -54,13 +54,14 @@
 
 ## 5. Ghost detail and resurrection radar
 
-- [ ] 5. Implement the detail view (full history, last price + listing
-  end labelled "listing ended", backlinks, history line)
-- [ ] 5.1 Implement the resurrection status display (`rdap_status` +
+- [x] 5. Implement the detail view (full history, last price + listing
+  end labelled "Listing ended" or "Listing set to end" relative to
+  `meta.rdap_checked_at`, backlinks, history line)
+- [x] 5.1 Implement the resurrection status display (`rdap_status` +
   `rdap_checked_at`, plain language for `unknown`)
-- [ ] 5.2 Implement the value radar (score/age/backlinks inputs visible,
+- [x] 5.2 Implement the value radar (score/age/backlinks inputs visible,
   price shown alongside, never folded in)
-- [ ] 5.3 Enforce Requirement 8 in copy: "last seen on the board" only,
+- [x] 5.3 Enforce Requirement 8 in copy: "last seen on the board" only,
   no "expired" / "deleted" anywhere in UI or comments
 
 ## 6. Search and filter
