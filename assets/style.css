@@ -200,7 +200,7 @@ main {
 
 .tier-fresh .tomb { border-color: var(--orange); }
 .tier-cold .tomb { border-color: var(--violet-deep); }
-.tier-ancient .tomb { border-color: #6c6a86; }
+.tier-ancient .tomb { border-color: #8581a6; }
 
 .tier-badge {
   display: inline-block;
@@ -413,7 +413,13 @@ main {
 .filter-fields:disabled .field select { opacity: 0.55; cursor: not-allowed; }
 .filter-fields:disabled .field label { opacity: 0.7; }
 
-.clear-link { grid-column: 1 / -1; justify-self: start; }
+.clear-link {
+  grid-column: 1 / -1;
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
 
 @media (min-width: 640px) {
   .filter-fields { grid-template-columns: 1fr 1fr; }
@@ -423,4 +429,17 @@ main {
 @media (min-width: 1000px) {
   .filter-fields { grid-template-columns: 2fr 1fr 1fr 1.3fr; }
   .field-search { grid-column: auto; }
+}
+
+/* Forced colors (Windows high contrast): the page palette is replaced by system
+   colors, so anything drawn only with a background or a text clip needs a rule. */
+@media (forced-colors: active) {
+  .site-title {
+    background: none;
+    -webkit-text-fill-color: currentColor;
+    color: CanvasText;
+  }
+  .meter-fill { background: Highlight; }
+  .tier-badge, .rdap-pill { border: 1px solid CanvasText; }
+  .tomb, .detail-section, .filter-fields, .panel { border-color: CanvasText; }
 }
