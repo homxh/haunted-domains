@@ -73,7 +73,7 @@
 
 ## 7. Accessibility pass (same baseline as Haunted Earnings PR #4)
 
-- [ ] 7. Apply the PR #4 baseline from the start: skip link with script
+- [x] 7. Apply the PR #4 baseline from the start: skip link with script
   handler, focus moves to the view heading on route change (only when
   focus was lost), per-view `document.title`, hidden headings naming
   cards, field-border and placeholder contrast, `aria-live` only on the

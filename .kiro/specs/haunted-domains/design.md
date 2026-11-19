@@ -122,6 +122,30 @@ The resurrection check on the detail view shows each ghost's own
   focus management on route change, per-view `document.title`,
   `aria-live` status for the result count, visible focus ring).
 
+## Accessibility as built
+
+- Landmarks: banner, main, search (the filter form), a named region per
+  view, contentinfo. One `h1`, one `h2` per view, `h3` per card and per
+  detail section, with no skipped levels.
+- Skip link with a script handler (a plain `#main` link would change the hash
+  and trigger the router). On a route change, focus moves to the view heading
+  only when the previous focus target is gone, never on first load. A failed
+  data load is the one exception: the error heading takes focus.
+- Per-view `document.title`. Exactly one live region (`#status`), fed through
+  a 400 ms debounce that drops repeats.
+- Cards: each `article` is named by its visible domain heading
+  (`aria-labelledby`), so no separate hidden heading is needed. The Show more
+  button reads "Show 60 more ghosts" to assistive technology and keeps its
+  visible text inside that name.
+- Contrast, measured on rendered pixels: every text run is at least 6:1.
+  Field borders are 4.6:1, placeholders 7.4:1, the focus ring at least 10:1
+  against every surface it sits on, and the ancient-tier card border 4.1:1.
+- Targets: controls, Show more and the Clear link are at least 44px tall.
+- Reduced motion turns off the hero drift and card transitions. Forced colors
+  keeps the title text, the meter fill and the pill and badge outlines.
+- Reflow holds at 320px, at 200% zoom, and with WCAG text-spacing overrides.
+- Hash-driven handlers ignore synthetic events outside the index view.
+
 ## Testing
 
 - `scripts/validate_data.py`: schema (all required fields, types, date

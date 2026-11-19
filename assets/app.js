@@ -131,14 +131,18 @@
     return row;
   }
 
-  function buildCard(g) {
+  function buildCard(g, index) {
     const tier = tierOf(g.days_missing);
     const li = make('li', 'ghost-card tier-' + tier);
     const tomb = make('article', 'tomb');
+    // The domain heading names the card, so a screen reader announces the
+    // article as "218s.com" instead of an unnamed article.
+    tomb.setAttribute('aria-labelledby', 'card-' + index);
 
     tomb.appendChild(make('span', 'tier-badge', TIER_LABELS[tier]));
 
     const heading = make('h3', 'tomb-domain');
+    heading.id = 'card-' + index;
     const link = make('a', 'tomb-link', g.domain);
     link.href = '#/' + encodeURIComponent(g.domain);
     heading.appendChild(link);
@@ -215,7 +219,11 @@
 
     const remaining = matched - shown;
     els.moreWrap.hidden = remaining <= 0;
-    if (remaining > 0) els.more.textContent = 'Show ' + Math.min(PAGE_SIZE, remaining) + ' more';
+    if (remaining > 0) {
+      const label = 'Show ' + Math.min(PAGE_SIZE, remaining) + ' more';
+      els.more.textContent = label;
+      els.more.setAttribute('aria-label', label + ' ghosts'); // visible text stays inside the name
+    }
 
     // The same text is shown on screen and sent to the live region.
     return none ? emptyMessage : countText;
@@ -235,6 +243,9 @@
   let searchTimer = null;
   function commitFilters() {
     clearTimeout(searchTimer);
+    // Only the index view has live controls. A synthetic event while the error
+    // view or the detail view is showing must not rewrite the URL.
+    if (state.failed || state.view !== 'index') return;
     const params = new URLSearchParams();
     const q = els.search.value.trim();
     if (q) params.set('q', q);
@@ -297,6 +308,7 @@
   }
 
   function showMore() {
+    if (state.failed || state.view !== 'index') return;
     const before = state.shown;
     state.limit += PAGE_SIZE;
     const text = applyView();
@@ -623,8 +635,8 @@
       return 0;
     });
     const fragment = document.createDocumentFragment();
-    for (const g of sorted) {
-      const entry = buildCard(g);
+    for (const [index, g] of sorted.entries()) {
+      const entry = buildCard(g, index);
       state.entries.push(entry);
       state.byDomain.set(entry.key, entry);
       fragment.appendChild(entry.li);
