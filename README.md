@@ -34,10 +34,38 @@ Devpost submission: _(add after submitting)_
 8. Record the under-3-minute demo video, upload to YouTube (public),
    submit on Devpost before **Dec 4, 2026, 2:00 PM PT**.
 
+## Run it and check it
+
+The site is static, with no build step. Serve the folder and open it:
+
+```bash
+python3 -m http.server 8000      # then visit http://localhost:8000
+```
+
+Opening `index.html` straight from disk does not work, because browsers block
+the data fetch. The page shows an error panel that says so.
+
+The checks start their own server, so nothing else needs to be running:
+
+```bash
+cd tests/pwcheck && npm install && npx playwright install chromium && cd ../..
+node tests/pwcheck/check.js                  # about a minute, exit 0 when everything passes
+node tests/pwcheck/check.js --only search    # one section (see --list)
+python3 scripts/validate_data.py             # the data validator on its own
+```
+
+If Playwright or Chromium live somewhere unusual, set `PW_MODULE` (a path to
+the `playwright` package) and `CHROMIUM_PATH` (a browser binary). The tooling
+in `tests/pwcheck` is for testing only; the site has no dependencies.
+
 ## What's in here
 
 | Path | What it is |
 | --- | --- |
+| `index.html`, `assets/app.js`, `assets/style.css` | The whole site: HTML, vanilla JS and CSS, no build step |
+| `tests/pwcheck/check.js` | Playwright checks: data, cards, search and filters, detail, errors, layouts, accessibility |
+| `scripts/validate_data.py` | Validates `data/ghosts.json` (run by the Kiro hook and by the checks) |
+| `scripts/export_to_ghosts.py` | Merges the paged Supabase export pages into `data/ghosts.json` |
 | `data/DATA-README.md` | Provenance, ghost definition, export query, RDAP method, data rules |
 | `scripts/rdap_check.py` | Batch RDAP snapshot: attaches `rdap_status` + `checked_at` to ghosts |
 | `.kiro/specs/haunted-domains/requirements.md` | EARS-style requirements (8 requirements) |

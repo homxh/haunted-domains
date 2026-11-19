@@ -3,3 +3,4 @@ ghosts.csv
 __pycache__/
 *.pyc
 ghosts-*.csv
+node_modules/

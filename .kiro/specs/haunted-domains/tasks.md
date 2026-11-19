@@ -81,12 +81,12 @@
 
 ## 8. Playwright checks
 
-- [ ] 8. Write `tests/pwcheck/check.js` (counts vs data, card fields vs
+- [x] 8. Write `tests/pwcheck/check.js` (counts vs data, card fields vs
   data, routing, search/filter, empty state, error states, layouts at
   1440/1000/360, zero console errors)
-- [ ] 8.1 Run the suite against the merged code; all checks must pass
+- [x] 8.1 Run the suite against the merged code; all checks must pass
   without edits to the test file
-- [ ] 8.2 Run `scripts/validate_data.py` again after the final data change
+- [x] 8.2 Run `scripts/validate_data.py` again after the final data change
 
 ## 9. Deploy and submit
 

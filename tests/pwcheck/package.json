@@ -1,0 +1,12 @@
+{
+  "name": "haunted-domains-pwcheck",
+  "private": true,
+  "description": "Playwright checks for Haunted Domains. Test tooling only: the site itself has no build step and no dependencies.",
+  "scripts": {
+    "test": "node check.js"
+  },
+  "devDependencies": {
+    "axe-core": "^4.10.0",
+    "playwright": "^1.50.0"
+  }
+}
