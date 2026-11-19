@@ -15,6 +15,9 @@
   const PAGE_SIZE = 60;
   const SITE_NAME = 'Haunted Domains';
   const ANNOUNCE_DELAY_MS = 400;
+  const SEARCH_DELAY_MS = 250;
+  const RDAP_STATUSES = ['registered', 'available', 'unknown'];
+  const FILTER_KEYS = ['q', 'tld', 'risk', 'rdap'];
   const TIER_LABELS = { fresh: 'Fresh', cold: 'Cold', ancient: 'Ancient' };
 
   const $ = (id) => document.getElementById(id);
@@ -47,15 +50,23 @@
     errorStatus: $('error-status'),
     errorHint: $('error-hint'),
     status: $('status'),
+    filterBar: $('filter-bar'),
+    filterFields: $('filter-fields'),
+    search: $('search-input'),
+    tld: $('filter-tld'),
+    risk: $('filter-risk'),
+    rdap: $('filter-rdap'),
+    clear: $('filter-clear'),
   };
 
   const state = {
     meta: null,
     entries: [], // { g, li, link, key }, sorted by last_seen then domain
     byDomain: new Map(), // lower-case domain -> entry
+    known: { tld: new Set(), risk: new Set(), rdap: new Set(RDAP_STATUSES) }, // values the filters can take
     ready: false,
     failed: false,
-    q: '',
+    filters: { q: '', tld: '', risk: '', rdap: '' },
     limit: PAGE_SIZE,
     matched: 0,
     shown: 0,
@@ -75,6 +86,14 @@
 
   function fmt(n) {
     return Number(n).toLocaleString('en-US');
+  }
+
+  function filtersActive(f) {
+    return FILTER_KEYS.some((k) => f[k] !== '');
+  }
+
+  function sameFilters(a, b) {
+    return FILTER_KEYS.every((k) => a[k] === b[k]);
   }
 
   // Recency tiers are display buckets by days missing, not claims about a domain.
@@ -160,11 +179,16 @@
   // `state.limit` matches. Every card stays in the DOM; non-matching and
   // not-yet-revealed cards are hidden with the hidden attribute.
   function applyView() {
-    const q = state.q.toLowerCase();
+    const f = state.filters;
+    const q = f.q.toLowerCase();
+    const active = filtersActive(f);
     let matched = 0;
     let shown = 0;
     for (const entry of state.entries) {
-      const hit = !q || entry.key.indexOf(q) !== -1;
+      const hit = (!q || entry.key.indexOf(q) !== -1) &&
+        (!f.tld || entry.g.tld === f.tld) &&
+        (!f.risk || entry.g.risk === f.risk) &&
+        (!f.rdap || entry.g.rdap_status === f.rdap);
       let visible = false;
       if (hit) {
         matched += 1;
@@ -177,7 +201,7 @@
     state.shown = shown;
 
     const total = state.entries.length;
-    const countText = q
+    const countText = active
       ? 'Showing ' + fmt(shown) + ' of ' + fmt(matched) + ' matching'
       : 'Showing ' + fmt(shown) + ' of ' + fmt(total);
     els.count.textContent = countText;
@@ -186,13 +210,90 @@
     const none = matched === 0;
     els.list.hidden = none;
     els.empty.hidden = !none;
-    if (none) els.emptyText.textContent = 'No ghosts match \u201c' + state.q + '\u201d.';
+    const emptyMessage = emptyMessageFor(f);
+    if (none) els.emptyText.textContent = emptyMessage;
 
     const remaining = matched - shown;
     els.moreWrap.hidden = remaining <= 0;
     if (remaining > 0) els.more.textContent = 'Show ' + Math.min(PAGE_SIZE, remaining) + ' more';
 
-    return countText;
+    // The same text is shown on screen and sent to the live region.
+    return none ? emptyMessage : countText;
+  }
+
+  function emptyMessageFor(f) {
+    const filtering = Boolean(f.tld || f.risk || f.rdap);
+    if (f.q && !filtering) return 'No ghosts match \u201c' + f.q + '\u201d.';
+    if (f.q) return 'No ghosts match \u201c' + f.q + '\u201d and the selected filters.';
+    return 'No ghosts match the selected filters.';
+  }
+
+  // ---------- search and filter controls ----------
+
+  // The URL is the single source of truth: the controls write the hash, and the
+  // router reads it back. #/?q=88&tld=.com&risk=Low+risk&rdap=registered
+  let searchTimer = null;
+  function commitFilters() {
+    clearTimeout(searchTimer);
+    const params = new URLSearchParams();
+    const q = els.search.value.trim();
+    if (q) params.set('q', q);
+    if (els.tld.value) params.set('tld', els.tld.value);
+    if (els.risk.value) params.set('risk', els.risk.value);
+    if (els.rdap.value) params.set('rdap', els.rdap.value);
+    const qs = params.toString();
+    // replace, not assign: typing and picking filters should not fill the back button
+    window.location.replace('#/' + (qs ? '?' + qs : ''));
+  }
+
+  function syncControls() {
+    const f = state.filters;
+    // Leave the text box alone while it already holds the same search, so a
+    // trailing space the visitor is still typing is not trimmed away.
+    if (els.search.value.trim() !== f.q) els.search.value = f.q;
+    els.tld.value = f.tld;
+    els.risk.value = f.risk;
+    els.rdap.value = f.rdap;
+    els.clear.hidden = !filtersActive(f);
+  }
+
+  function addOptions(select, counts, labelFor) {
+    for (const [value, n] of counts) {
+      const option = make('option', null, labelFor(value) + ' (' + fmt(n) + ')');
+      option.value = value;
+      select.appendChild(option);
+    }
+  }
+
+  // Options come from the data: TLDs and risk labels that occur, and the three
+  // registration statuses the snapshot can hold. Counts cover the whole data set.
+  function buildFilterOptions() {
+    const tlds = new Map();
+    const risks = new Map();
+    const statuses = new Map(RDAP_STATUSES.map((s) => [s, 0]));
+    for (const { g } of state.entries) {
+      tlds.set(g.tld, (tlds.get(g.tld) || 0) + 1);
+      risks.set(g.risk, (risks.get(g.risk) || 0) + 1);
+      if (statuses.has(g.rdap_status)) statuses.set(g.rdap_status, statuses.get(g.rdap_status) + 1);
+    }
+    const byKey = (a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0);
+    const sortedTlds = [...tlds].sort(byKey);
+    const sortedRisks = [...risks].sort(byKey);
+    state.known.tld = new Set(sortedTlds.map((e) => e[0]));
+    state.known.risk = new Set(sortedRisks.map((e) => e[0]));
+    addOptions(els.tld, sortedTlds, (v) => v);
+    addOptions(els.risk, sortedRisks, (v) => v);
+    addOptions(els.rdap, [...statuses], (v) => RDAP_COPY[v][0]);
+  }
+
+  // A hash can carry values the controls cannot show (a TLD that is not in the
+  // data, say). Those are dropped rather than silently matching nothing.
+  function sanitizeFilters(f) {
+    const clean = { q: f.q, tld: f.tld, risk: f.risk, rdap: f.rdap };
+    for (const key of ['tld', 'risk', 'rdap']) {
+      if (clean[key] && !state.known[key].has(clean[key])) clean[key] = '';
+    }
+    return clean;
   }
 
   function showMore() {
@@ -379,16 +480,25 @@
   // ---------- routing ----------
 
   // #/            graveyard index
-  // #/?q=term     index filtered by domain name
+  // #/?q=term     index filtered by domain name (also tld=, risk=, rdap=)
   // #/<domain>    ghost detail
   function parseRoute() {
     const raw = window.location.hash.replace(/^#/, '');
-    if (raw === '' || raw === '/') return { type: 'index', q: '' };
+    if (raw === '' || raw === '/') return { type: 'index', filters: { q: '', tld: '', risk: '', rdap: '' } };
     const cut = raw.indexOf('?');
     const path = cut === -1 ? raw : raw.slice(0, cut);
     const query = cut === -1 ? '' : raw.slice(cut + 1);
     if (path === '' || path === '/') {
-      return { type: 'index', q: (new URLSearchParams(query).get('q') || '').trim() };
+      const params = new URLSearchParams(query);
+      return {
+        type: 'index',
+        filters: {
+          q: (params.get('q') || '').trim(),
+          tld: params.get('tld') || '',
+          risk: params.get('risk') || '',
+          rdap: params.get('rdap') || '',
+        },
+      };
     }
     let name = path.replace(/^\//, '');
     try {
@@ -413,13 +523,16 @@
       const route = parseRoute();
       if (route.type === 'index') {
         view = 'index';
-        if (route.q !== state.q) {
-          state.q = route.q;
+        const f = sanitizeFilters(route.filters);
+        if (!sameFilters(f, state.filters)) {
+          state.filters = f;
           state.limit = PAGE_SIZE;
           announce(applyView());
         }
-        heading = route.q ? 'Search results for \u201c' + route.q + '\u201d' : 'The graveyard';
-        title = route.q ? 'Search \u201c' + route.q + '\u201d' : 'The graveyard';
+        syncControls();
+        const filtering = Boolean(f.tld || f.risk || f.rdap);
+        heading = f.q ? 'Search results for \u201c' + f.q + '\u201d' : filtering ? 'Filtered graveyard' : 'The graveyard';
+        title = f.q ? 'Search \u201c' + f.q + '\u201d' : filtering ? 'Filtered graveyard' : 'The graveyard';
         els.headings.index.textContent = heading;
       } else {
         const entry = state.byDomain.get(route.name.toLowerCase());
@@ -443,6 +556,7 @@
       els.views[name].hidden = name !== view;
     }
     state.view = view;
+    els.filterBar.hidden = view !== 'index' && view !== 'error';
     document.title = title + ' \u00b7 ' + SITE_NAME;
 
     if (!state.firstRoute && previous !== view) {
@@ -474,6 +588,7 @@
     els.errorStatus.textContent = info.text;
     els.errorHint.hidden = !info.hint;
     els.loading.hidden = true;
+    els.filterFields.disabled = true; // the bar stays visible but inert
     state.failed = true;
     state.ready = true;
     render();
@@ -515,6 +630,7 @@
       fragment.appendChild(entry.li);
     }
     els.list.appendChild(fragment);
+    buildFilterOptions();
 
     renderMetaLine(state.meta);
     els.loading.hidden = true;
@@ -535,6 +651,15 @@
     els.main.focus();
   });
   els.more.addEventListener('click', showMore);
+  els.search.addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(commitFilters, SEARCH_DELAY_MS);
+  });
+  for (const select of [els.tld, els.risk, els.rdap]) select.addEventListener('change', commitFilters);
+  els.filterBar.addEventListener('submit', (event) => {
+    event.preventDefault();
+    commitFilters();
+  });
   window.addEventListener('hashchange', render);
 
   fetchData().then(init, fail);

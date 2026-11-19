@@ -42,7 +42,31 @@
       <p class="panel">Haunted Domains loads its ghost list with JavaScript. Please enable it to enter the graveyard.</p>
     </noscript>
 
-    <!-- Graveyard index (#/ and #/?q=term) -->
+    <!-- Search and filters. Shown on the index and, disabled, when the data fails to load. -->
+    <form id="filter-bar" class="filter-bar" role="search" aria-label="Search and filter the graveyard" autocomplete="off" hidden>
+      <fieldset id="filter-fields" class="filter-fields">
+        <legend class="sr-only">Search and filters</legend>
+        <div class="field field-search">
+          <label for="search-input">Search domains</label>
+          <input id="search-input" name="q" type="search" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="for example 88">
+        </div>
+        <div class="field">
+          <label for="filter-tld">TLD</label>
+          <select id="filter-tld" name="tld"><option value="">All TLDs</option></select>
+        </div>
+        <div class="field">
+          <label for="filter-risk">Risk label</label>
+          <select id="filter-risk" name="risk"><option value="">All risk labels</option></select>
+        </div>
+        <div class="field">
+          <label for="filter-rdap">Registration (saved snapshot)</label>
+          <select id="filter-rdap" name="rdap"><option value="">Any status</option></select>
+        </div>
+        <a id="filter-clear" class="clear-link" href="#/" hidden>Clear search and filters</a>
+      </fieldset>
+    </form>
+
+    <!-- Graveyard index (#/ and #/?q=term&tld=&risk=&rdap=) -->
     <section id="view-index" class="view" aria-labelledby="index-heading" hidden>
       <h2 id="index-heading" class="view-heading" tabindex="-1">The graveyard</h2>
       <p id="meta-line" class="meta-line"></p>
@@ -51,7 +75,7 @@
       <p id="result-count" class="result-count" hidden></p>
       <div id="empty-state" class="panel" hidden>
         <p id="empty-text"></p>
-        <p><a href="#/">Back to the full graveyard</a></p>
+        <p><a href="#/">Clear search and filters</a></p>
       </div>
       <ul id="ghost-list" class="ghost-list" hidden></ul>
       <div id="more-wrap" class="more-wrap" hidden>
