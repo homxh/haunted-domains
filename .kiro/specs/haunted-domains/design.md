@@ -155,11 +155,25 @@ The resurrection check on the detail view shows each ghost's own
   window end.
 - Kiro hook `.kiro/hooks/validate-ghosts.json` (v1 schema, `PostFileSave`
   trigger matching `data/ghosts.json`): runs the validator after edits.
-- `tests/pwcheck/check.js` (Playwright, headless Chromium): ghost count
-  vs data file, card fields vs data (domain, last_seen, price verbatim),
-  routing (index → detail → back), search/filter, empty state, error
-  state (data file renamed), layouts at 1440/1000/360, zero console
-  errors. Mirrors the Haunted Earnings check suite's structure.
+- `tests/pwcheck/check.js` (Playwright, headless Chromium, one file, its own
+  static server, `node tests/pwcheck/check.js`). Ten sections: `repo`
+  (validator, data facts, forbidden words, no HTML built from data, no
+  third-party loads), `index`, `showmore`, `search`, `routing`, `detail`,
+  `errors`, `layout`, `a11y`, `network`. Expected values are worked out from
+  `data/ghosts.json` by code that does not share the app's logic: every card
+  and every detail page is compared with the data, the listing-end label and
+  the radar are recomputed per ghost, and the error cases include a real
+  HTTP 404 from the suite's server. Each section also fails on any console
+  error, warning, page error or dialog. `--only a,b` runs chosen sections,
+  `--list` names them, and axe-core runs when it is installed.
+- The suite was checked by breaking the app on purpose: 30 deliberate
+  mutations (tier boundary, price formatting, page size, sort order, the
+  listing-end tie, radar cap and rounding, search case, announcement
+  debounce and de-duplication, filter reset, URL handling, the event guard,
+  the inert error bar, HTML injection, an external data URL, a wrong count in
+  the data, the skip link, first-load focus, Show more focus, card names,
+  field contrast, forced colors, tap targets, grid overflow, reduced motion)
+  were each caught by the section that owns them.
 
 ## Decisions and open questions
 
